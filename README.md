@@ -78,3 +78,75 @@
 
 7. That's it! Hit the endpoint of the 'ExecuteTask' API, and you will see the logs received using the command \ 
    "celery -A queuemanager worker --loglevel=info"
+
+
+
+########################## Celery Beat Setup ########################   
+
+Note: The Celery setup should be completed before setting up Celery Beat.
+
+1. Install django-celery-beat in your Django project environment, include it in INSTALLED_APPS, and migrate.
+   
+       1. pip install django-celery-beat
+
+       2. INSTALLED_APPS = [
+            ...
+            'django_celery_beat',
+            ...
+          ]
+       3. python manage.py migrate django_celery_beat
+
+2. Update your Celery configuration in settins.py file
+
+        #Celery config
+        CELERY_BROKER_URL = 'redis://localhost:6379/0'  
+        CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+        CELERY_ACCEPT_CONTENT = ['json']
+        CELERY_TASK_SERIALIZER = 'json'
+        CELERY_RESULT_SERIALIZER = 'json'
+        CELERY_TIMEZONE = 'Asia/Kolkata'
+        CELERY_ACKS_LATE = True 
+
+        #CeleryBeat config
+        CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'    # add this one..
+
+   
+3. Create periodic tasks in celery.py file by following block of code:
+
+            # Celery Beat Settings
+            app.conf.beat_schedule = {
+                "send-test-email": {
+                    "task": "queuemanager.tasks.send_test_email",
+                    "schedule": timedelta(seconds=10),
+                    "args": ()
+                },
+            }
+
+        
+        #updated celery.py 
+
+        from __future__ import absolute_import, unicode_literals
+        import os
+        from celery import Celery
+        from datetime import timedelta
+
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'queuemanager.settings')
+        app = Celery('queuemanager')
+        app.config_from_object('django.conf:settings', namespace='CELERY')
+        app.autodiscover_tasks()
+
+        app.conf.beat_schedule = {
+            "send-test-email": {
+                "task": "queuemanager.tasks.send_test_email",
+                "schedule": timedelta(seconds=10),
+                "args": ()
+            },
+        }
+
+4. Make sure both of the following commands are running. That's it.
+
+        # Start Celery worker
+        celery -A queuemanager worker -l info
+
+        # Start Celery beat
+        celery -A queuemanager beat -l info

@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'basicapi',
     'celery',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -126,7 +127,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# tatqueue/settings.py
+#Celery config
 
 CELERY_BROKER_URL = 'redis://localhost:6379/0'  
 CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
@@ -134,7 +135,11 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Asia/Kolkata'
-CELERY_ACKS_LATE = True  
+CELERY_ACKS_LATE = True 
+
+#CeleryBeat config
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
