@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from queuemanager.tasks import send_test_email
+from taskmanager.tasks import send_test_email
 
 # Create your views here.
 

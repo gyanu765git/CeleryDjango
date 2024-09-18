@@ -1,6 +1,6 @@
 ###################### Celery Setup ########################
 
-1. Install redis server and celery and start celery worker process and see logs.
+1. Install redis server and celery and start celery worker process.
    
     # Installing redis server(you can also use rabbitMQ,I am using redis server): 
      
@@ -15,9 +15,9 @@
         1. pip install redis
         2. pip install celery
 
-    # Start Celery worker process and see logs:
+    # Start Celery worker process:
 
-        1. celery -A queuemanager worker --loglevel=info    #'queuemanager' is your project name
+        1. celery -A taskmanager worker --loglevel=info    #'taskmanager' is your project name
 
 2. Configure the following settings in your settings.py file.
 
@@ -39,8 +39,8 @@
         import os
         from celery import Celery
 
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'queuemanager.settings')
-        app = Celery('queuemanager')
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'taskmanager.settings')
+        app = Celery('taskmanager')
         app.config_from_object('django.conf:settings', namespace='CELERY')
         app.autodiscover_tasks()
 
@@ -68,7 +68,7 @@
 
         from rest_framework.views import APIView
         from rest_framework.response import Response
-        from queuemanager.tasks import send_test_email
+        from taskmanager.tasks import send_test_email
 
         class ExecuteTask(APIView):
             @staticmethod
@@ -77,7 +77,7 @@
                 return Response({"success": "True", "message": "executed successfully", "data": []})
 
 7. That's it! Hit the endpoint of the 'ExecuteTask' API, and you will see the logs received using the command \ 
-   "celery -A queuemanager worker --loglevel=info"
+   "celery -A taskmanager worker --loglevel=info"
 
 
 
@@ -116,7 +116,7 @@ Note: The Celery setup should be completed before setting up Celery Beat.
             # Celery Beat Settings
             app.conf.beat_schedule = {
                 "send-test-email": {
-                    "task": "queuemanager.tasks.send_test_email",
+                    "task": "taskmanager.tasks.send_test_email",
                     "schedule": timedelta(seconds=10),
                     "args": ()
                 },
@@ -130,14 +130,14 @@ Note: The Celery setup should be completed before setting up Celery Beat.
         from celery import Celery
         from datetime import timedelta
 
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'queuemanager.settings')
-        app = Celery('queuemanager')
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'taskmanager.settings')
+        app = Celery('taskmanager')
         app.config_from_object('django.conf:settings', namespace='CELERY')
         app.autodiscover_tasks()
 
         app.conf.beat_schedule = {
             "send-test-email": {
-                "task": "queuemanager.tasks.send_test_email",
+                "task": "taskmanager.tasks.send_test_email",
                 "schedule": timedelta(seconds=10),
                 "args": ()
             },
@@ -146,7 +146,7 @@ Note: The Celery setup should be completed before setting up Celery Beat.
 4. Make sure both of the following commands are running. That's it.
 
         # Start Celery worker
-        celery -A queuemanager worker -l info
+        celery -A taskmanager worker -l info
 
         # Start Celery beat
-        celery -A queuemanager beat -l info
+        celery -A taskmanager beat -l info
