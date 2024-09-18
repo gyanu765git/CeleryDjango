@@ -1,21 +1,25 @@
 ###################### Celery Setup ########################
 
-1. install redis server and celery.
+1. Install redis server and celery and start celery worker process and see logs.
    
-    # installing redis server( you can also use rabbitMQ), I am using redis server
+    # Installing redis server(you can also use rabbitMQ,I am using redis server): 
      
         1. sudo apt update
         2. sudo apt install redis-server
         3. sudo systemctl enable redis-server
         4. sudo systemctl restart redis-server
-        5. sudo systemctl status redis-server # make sure it status is running....
+        5. sudo systemctl status redis-server # Ensure its status is running.
     
-    # install celery and redis in django project environemnt.
+    # Install celery and redis in django project environemnt.
 
         1. pip install redis
         2. pip install celery
 
-2. Do following settings configuration in your project settings.py file.
+    # Start Celery worker process and see logs:
+
+        1. celery -A queuemanager worker --loglevel=info    #'queuemanager' is your project name
+
+2. Configure the following settings in your settings.py file.
 
         # settings.py
 
@@ -28,7 +32,7 @@
         CELERY_ACKS_LATE = True 
 
 
-3. Create celery.py file with following block of code in project directory where settings.py file located.
+3. Create a celery.py file with the following code in the project directory where settings.py is located.
 
 
         from __future__ import absolute_import, unicode_literals
@@ -41,12 +45,12 @@
         app.autodiscover_tasks()
 
     
-4. Paste below block of code in __init__.py file of project.
+4. Add the following code to the __init__.py file of the project.
 
         from .celery import app as celery_app
         __all__ = ('celery_app',)
 
-5. Create tasks.py file in project folder( you can create it in any app) and create task using @shared_task decorator.
+5. Create tasks.py file in the project folder (you can create it in any app) and define a task using @shared_taskdecorator.
 
         from celery import shared_task
         from django.core.mail import send_mail
@@ -60,7 +64,7 @@
             send_mail(subject, message, from_email, recipient_list)
 
 
-6. Now you can call this task in api you want to use.
+6. Now you can call this task in the API where you want to use it.
 
         from rest_framework.views import APIView
         from rest_framework.response import Response
@@ -72,3 +76,5 @@
                 send_test_email.apply_async()
                 return Response({"success": "True", "message": "executed successfully", "data": []})
 
+7. That's it! Hit the endpoint of the 'ExecuteTask' API, and you will see the logs received using the command \ 
+   "celery -A queuemanager worker --loglevel=info"
